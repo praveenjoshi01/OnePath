@@ -35,8 +35,8 @@ graph TD
 | Layer | Component | Description |
 |---|---|---|
 | **Frontend** | React 18 + Vite | SPA featuring dark-mode glassmorphism design system (`index.css`), Kanban board (`PipelineKanban.jsx`), Data Table (`EnquiriesTable.jsx`), and interactive modals. |
-| **Backend** | Node.js + Express | Modular REST API server (`server/index.js`) and Vercel Serverless Function (`api/index.js`) using `@supabase/supabase-js`. |
-| **Database** | Supabase Cloud (PostgreSQL) | Managed cloud PostgreSQL database (`server/supabase.js` / `server/supabase_schema.sql`). |
+| **Backend** | Node.js + Express | Modular REST API server (`server/index.js`) and Vercel Serverless Function (`api/index.js`) using `@supabase/supabase-js` and `pg`. |
+| **Database** | Supabase Cloud (PostgreSQL) | Managed cloud PostgreSQL database with REST API (`server/supabase.js`) and Direct TCP Pool (`postgresql://postgres:...@db.fkmzuwdtssuiokfnmorf.supabase.co:5432/postgres`). |
 | **Serverless Deployment** | Vercel Platform | Pre-configured `vercel.json` routing `/api/*` to Express Serverless Handler and static assets to React Vite bundle. |
 | **Interoperability** | OnePath JSON Payload | Standardized JSON payload transformer mapping prospective child & guardian attributes to destination platform schemas. |
 

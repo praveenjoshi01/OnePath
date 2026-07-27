@@ -46,8 +46,8 @@ Rather than replacing incumbent operational childcare systems (such as *Famly*, 
 | Layer | Technology |
 |---|---|
 | **Frontend** | React 18, Vite, Lucide Icons, Modern Vanilla CSS Design System |
-| **Backend** | Node.js, Express REST API (`@supabase/supabase-js`) |
-| **Database** | Supabase Cloud (PostgreSQL) — Managed Cloud Database (`https://fkmzuwdtssuiokfnmorf.supabase.co`) |
+| **Backend** | Node.js, Express REST API (`@supabase/supabase-js`, `pg` PostgreSQL driver) |
+| **Database** | Supabase Cloud (PostgreSQL) — Dual REST & Direct TCP Connection (`postgresql://postgres:...@db.fkmzuwdtssuiokfnmorf.supabase.co:5432/postgres`) |
 | **Data Format** | JSON (REST API & Standardized Export Payload) |
 | **Cloud Hosting**| Vercel (Pre-configured via `vercel.json` & `api/index.js`) |
 
