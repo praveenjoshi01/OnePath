@@ -1,34 +1,22 @@
 import express from 'express';
-import db from '../db.js';
+import { getApplicationById, updateApplication, createSyncLog, getSyncLogs } from '../supabase_db.js';
 
 const router = express.Router();
 
-// Supported destination platforms benchmarked in OnePath vendor research
 const SUPPORTED_VENDORS = ['Famly', 'TeachKloud', 'Child Paths', 'EYCEsoft', 'Tot Tracker', 'Little Vista'];
 
 // GET all sync audit logs
-router.get('/logs', (req, res) => {
+router.get('/logs', async (req, res) => {
   try {
-    const logs = db.prepare(`
-      SELECT s.*, a.child_first_name, a.child_last_name, a.parent_name
-      FROM sync_logs s
-      JOIN applications a ON s.application_id = a.id
-      ORDER BY s.synced_at DESC
-    `).all();
-
-    const parsedLogs = logs.map(log => ({
-      ...log,
-      payload: log.payload ? JSON.parse(log.payload) : null
-    }));
-
-    res.json({ success: true, count: parsedLogs.length, data: parsedLogs });
+    const logs = await getSyncLogs();
+    res.json({ success: true, count: logs.length, data: logs });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 });
 
 // POST export/sync confirmed prospective child into destination platform
-router.post('/export', (req, res) => {
+router.post('/export', async (req, res) => {
   try {
     const { application_id, target_platform = 'Famly' } = req.body;
 
@@ -43,13 +31,7 @@ router.post('/export', (req, res) => {
       });
     }
 
-    const app = db.prepare(`
-      SELECT a.*, r.name as room_name, r.staff_ratio
-      FROM applications a
-      LEFT JOIN rooms r ON a.room_id = r.id
-      WHERE a.id = ?
-    `).get(application_id);
-
+    const app = await getApplicationById(application_id);
     if (!app) {
       return res.status(404).json({ success: false, error: 'Application record not found' });
     }
@@ -84,21 +66,21 @@ router.post('/export', (req, res) => {
       }
     };
 
-    // Simulate API handoff validation
     let status = 'SUCCESS';
     let responseMessage = `[API 201 Created] Child record '${app.child_first_name} ${app.child_last_name}' successfully provisioned in ${target_platform}. Active child record created with ID ${target_platform.toLowerCase()}_child_${Date.now()}`;
 
     // Record audit log
-    const stmt = db.prepare(`
-      INSERT INTO sync_logs (application_id, target_platform, status, payload, response_message, synced_at)
-      VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-    `);
+    await createSyncLog({
+      application_id: Number(application_id),
+      target_platform,
+      status,
+      payload: normalizedPayload,
+      response_message: responseMessage
+    });
 
-    stmt.run(application_id, target_platform, status, JSON.stringify(normalizedPayload), responseMessage);
-
-    // Optionally mark application stage as confirmed if not already
+    // Mark stage as confirmed if not already
     if (app.stage !== 'confirmed') {
-      db.prepare("UPDATE applications SET stage = 'confirmed', updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(application_id);
+      await updateApplication(application_id, { stage: 'confirmed' });
     }
 
     res.json({
