@@ -5,7 +5,11 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const dbPath = path.join(__dirname, 'enrollment_manager.db');
+const isVercel = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
+const dbPath = isVercel
+  ? path.join('/tmp', 'enrollment_manager.db')
+  : path.join(__dirname, 'enrollment_manager.db');
+
 const db = new Database(dbPath);
 
 // Enable foreign keys

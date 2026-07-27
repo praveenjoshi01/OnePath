@@ -35,8 +35,9 @@ graph TD
 | Layer | Component | Description |
 |---|---|---|
 | **Frontend** | React 18 + Vite | SPA featuring dark-mode glassmorphism design system (`index.css`), Kanban board (`PipelineKanban.jsx`), Data Table (`EnquiriesTable.jsx`), and interactive modals. |
-| **Backend** | Node.js + Express | Modular REST API server (`server/index.js`) providing routes for enquiries, rooms, tasks, and vendor API sync exports. |
-| **Database** | SQLite3 (`better-sqlite3`) | Local zero-configuration file database (`server/enrollment_manager.db`) with foreign key constraints enabled. |
+| **Backend** | Node.js + Express | Modular REST API server (`server/index.js`) and Vercel Serverless Function (`api/index.js`). |
+| **Database** | SQLite3 (`better-sqlite3`) | Local zero-configuration file database (`server/enrollment_manager.db` / `/tmp/enrollment_manager.db` on Vercel). |
+| **Serverless Deployment** | Vercel Platform | Pre-configured `vercel.json` routing `/api/*` to Express Serverless Handler and static assets to React Vite bundle. |
 | **Interoperability** | OnePath JSON Payload | Standardized JSON payload transformer mapping prospective child & guardian attributes to destination platform schemas. |
 
 ---

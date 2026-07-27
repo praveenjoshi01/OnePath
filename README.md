@@ -47,8 +47,27 @@ Rather than replacing incumbent operational childcare systems (such as *Famly*, 
 |---|---|
 | **Frontend** | React 18, Vite, Lucide Icons, Modern Vanilla CSS Design System |
 | **Backend** | Node.js, Express REST API |
-| **Database** | SQLite3 (`better-sqlite3`) — Zero-config local database file |
+| **Database** | SQLite3 (`better-sqlite3`) — Zero-config local & serverless database |
 | **Data Format** | JSON (REST API & Standardized Export Payload) |
+| **Cloud Hosting**| Vercel (Pre-configured via `vercel.json` & `api/index.js`) |
+
+---
+
+## 🚀 Deploying to Vercel (1-Click Hosting)
+
+OnePath Enrollment Manager is pre-configured with `vercel.json` and `api/index.js` for instant full-stack deployment on **Vercel**:
+
+### Steps to Host on Vercel:
+1. Go to your **Vercel Dashboard** ([vercel.com/new](https://vercel.com/new)).
+2. Click **"Import Project"** and select your GitHub repository: `https://github.com/praveenjoshi01/OnePath`.
+3. Vercel will automatically detect `vercel.json`:
+   - **Framework Preset**: Vite / Other
+   - **Root Directory**: `./` (leave default)
+   - **Build Command**: `cd client && npm install && npm run build`
+   - **Output Directory**: `client/dist`
+4. Click **Deploy**. Vercel will host:
+   - **Frontend UI**: React Vite SPA hosted at your Vercel URL.
+   - **Backend API**: Express serverless functions at `/api/*` (auto-seeded SQLite in `/tmp`).
 
 ---
 
