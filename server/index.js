@@ -1,12 +1,17 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { initDb } from './db.js';
 import enquiriesRouter from './routes/enquiries.js';
 import roomsRouter from './routes/rooms.js';
 import tasksRouter from './routes/tasks.js';
 import syncRouter from './routes/sync.js';
+import authRouter from './routes/auth.js';
 
 dotenv.config();
+
+// Initialize SQLite database
+initDb();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -20,14 +25,14 @@ app.use('/api/enquiries', enquiriesRouter);
 app.use('/api/rooms', roomsRouter);
 app.use('/api/tasks', tasksRouter);
 app.use('/api/sync', syncRouter);
+app.use('/api/auth', authRouter);
 
 // Healthcheck
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'online',
     app: 'OnePath Enrollment Manager API',
-    database: 'Supabase Cloud (PostgreSQL)',
-    supabase_url: process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://fkmzuwdtssuiokfnmorf.supabase.co',
+    database: 'SQLite (Persistent)',
     timestamp: new Date().toISOString()
   });
 });
@@ -36,7 +41,7 @@ app.get('/api/health', (req, res) => {
 app.listen(PORT, () => {
   console.log(`====================================================`);
   console.log(`🚀 OnePath Enrollment Manager Server running on port ${PORT}`);
-  console.log(`⚡ Database: Connected to Supabase Cloud`);
+  console.log(`⚡ Database: SQLite Persistent (Initialized)`);
   console.log(`📡 Health Check: http://localhost:${PORT}/api/health`);
   console.log(`====================================================`);
 });

@@ -35,8 +35,8 @@ graph TD
 | Layer | Component | Description |
 |---|---|---|
 | **Frontend** | React 18 + Vite | SPA featuring dark-mode glassmorphism design system (`index.css`), Kanban board (`PipelineKanban.jsx`), Data Table (`EnquiriesTable.jsx`), and interactive modals. |
-| **Backend** | Node.js + Express | Modular REST API server (`server/index.js`) and Vercel Serverless Function (`api/index.js`) using `@supabase/supabase-js` and `pg`. |
-| **Database** | Supabase Cloud (PostgreSQL) | Managed cloud PostgreSQL database with REST API (`server/supabase.js`) and Direct TCP Pool (`postgresql://postgres:...@db.fkmzuwdtssuiokfnmorf.supabase.co:5432/postgres`). |
+| **Backend** | Node.js + Express | Modular REST API server (`server/index.js`) and Vercel Serverless Function (`api/index.js`) using `better-sqlite3` for local persistence. |
+| **Database** | SQLite (Persistent) | Local SQL database initialized and seeded in `server/db.js` with schema enforcement and foreign key triggers. |
 | **Serverless Deployment** | Vercel Platform | Pre-configured `vercel.json` routing `/api/*` to Express Serverless Handler and static assets to React Vite bundle. |
 | **Interoperability** | OnePath JSON Payload | Standardized JSON payload transformer mapping prospective child & guardian attributes to destination platform schemas. |
 
@@ -86,6 +86,7 @@ erDiagram
     ROOMS ||--o{ APPLICATIONS : assigns
     APPLICATIONS ||--o{ TASKS : generates
     APPLICATIONS ||--o{ SYNC_LOGS : auditing
+    APPLICATIONS ||--o{ ACTIVITY_LOGS : tracking
 
     ROOMS {
         int id PK
@@ -134,6 +135,22 @@ erDiagram
         string response_message
         datetime synced_at
     }
+
+    USERS {
+        int id PK
+        string email
+        string password
+        string role
+        string name
+    }
+
+    ACTIVITY_LOGS {
+        int id PK
+        int application_id FK
+        string action
+        string notes
+        datetime created_at
+    }
 ```
 
 ---
@@ -172,3 +189,11 @@ When a child record reaches `confirmed` stage, OnePath normalises the record int
   }
 }
 ```
+
+---
+
+## 🔐 User Authentication & Evaluation Credentials
+
+OnePath uses tokenless session cookie simulation (or local secure tokens) to manage session state on the client side, authenticating admin and manager users against the `users` table via the `POST /api/auth/login` endpoint.
+
+For local development and testing, default evaluation credentials are kept in a Git-ignored markdown file `Code/credentials.md` to prevent exposure on the production-facing UI.

@@ -1,5 +1,5 @@
 import express from 'express';
-import { getTasks, createTask, toggleTask } from '../supabase_db.js';
+import { getTasks, createTask, toggleTask } from '../db.js';
 
 const router = express.Router();
 

@@ -1,5 +1,5 @@
 import express from 'express';
-import { getApplicationById, updateApplication, createSyncLog, getSyncLogs } from '../supabase_db.js';
+import { getApplicationById, updateApplication, createSyncLog, getSyncLogs } from '../db.js';
 
 const router = express.Router();
 

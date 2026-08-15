@@ -1,5 +1,5 @@
 import express from 'express';
-import { getRooms, createRoom, getApplications } from '../supabase_db.js';
+import { getRooms, createRoom, getApplications } from '../db.js';
 
 const router = express.Router();
 
