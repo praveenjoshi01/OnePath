@@ -1,7 +1,7 @@
 import React from 'react';
-import { Layers, Plus, RefreshCw, Sparkles, Building2 } from 'lucide-react';
+import { Layers, Plus, RefreshCw, Sparkles, Building2, LogOut } from 'lucide-react';
 
-export default function Header({ onOpenNewModal, onRefresh, loading }) {
+export default function Header({ onOpenNewModal, onRefresh, loading, user, onLogout }) {
   return (
     <header style={{
       display: 'flex',
@@ -53,15 +53,48 @@ export default function Header({ onOpenNewModal, onRefresh, loading }) {
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {/* User Info & Logout Button */}
+        {user && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            marginRight: '8px',
+            borderRight: '1px solid var(--border-color)',
+            paddingRight: '20px'
+          }}>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: '0.825rem', fontWeight: 700, color: '#f8fafc' }}>{user.name}</div>
+              <div style={{ fontSize: '0.725rem', color: 'var(--text-secondary)', textTransform: 'capitalize' }}>{user.role}</div>
+            </div>
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={onLogout}
+              title="Sign Out"
+              style={{
+                padding: '8px',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <LogOut size={15} />
+            </button>
+          </div>
+        )}
+
         <button className="btn btn-secondary btn-sm" onClick={onRefresh} disabled={loading} title="Refresh data">
           <RefreshCw size={15} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
           Refresh
         </button>
         
-        <button className="btn btn-primary" onClick={onOpenNewModal}>
-          <Plus size={18} />
-          New Enquiry
-        </button>
+        {user && (
+          <button className="btn btn-primary" onClick={onOpenNewModal}>
+            <Plus size={18} />
+            New Enquiry
+          </button>
+        )}
       </div>
 
       <style>{`

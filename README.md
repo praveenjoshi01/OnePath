@@ -46,10 +46,10 @@ Rather than replacing incumbent operational childcare systems (such as *Famly*, 
 | Layer | Technology |
 |---|---|
 | **Frontend** | React 18, Vite, Lucide Icons, Modern Vanilla CSS Design System |
-| **Backend** | Node.js, Express REST API (`@supabase/supabase-js`, `pg` PostgreSQL driver) |
-| **Database** | Supabase Cloud (PostgreSQL) — Dual REST & Direct TCP Connection (`postgresql://postgres:...@db.fkmzuwdtssuiokfnmorf.supabase.co:5432/postgres`) |
+| **Backend** | Node.js, Express REST API (`better-sqlite3` driver) |
+| **Database** | SQLite (Persistent Local Storage) — Auto-initialized and seeded in `server/db.js` |
 | **Data Format** | JSON (REST API & Standardized Export Payload) |
-| **Cloud Hosting**| Vercel (Pre-configured via `vercel.json` & `api/index.js`) |
+| **Cloud Hosting**| Vercel (Pre-configured via `vercel.json` & `api/index.js` serverless function with SQLite in `/tmp`) |
 
 ---
 
@@ -156,15 +156,38 @@ The SQLite database file is created automatically at `Code/server/enrollment_man
 - **`applications`**: Prospective child profiles, requested start date, parent contact details, pipeline stage, deposit status, room assignment, sibling priority flag, and notes.
 - **`tasks`**: Action items linked to applications with due dates and completion status.
 - **`sync_logs`**: Audit trail of API exports to external vendor platforms (*Famly*, *TeachKloud*, etc.).
+- **`users`**: Store credentials, name, and role for administrator access.
+- **`activity_logs`**: Store detailed, chronological history logs for child applications (e.g. stage updates, task completions, sync actions).
+
+---
+
+## 🔐 Evaluation & Default Credentials
+
+When launching the application, you will be prompted with a visual login screen. To keep the login screen clean, the default quick-fill credentials panel has been removed. You can find the seeded evaluation accounts documented locally in [credentials.md](file:///Users/praveenjoshi/Code/Code2026/OnePath/Code/credentials.md) (which is ignored by Git).
+
+---
+
+## 🔄 Visual Workflows Integration
+
+As outlined in `Docs/OnePath_Enrollment_Visual_Workflows.docx`, the product implements the complete enrollment lifecycle:
+
+1. **Workflow 1: Parent Enrollment Journey**: Parents can submit applications via a beautiful, public-facing multi-step wizard by clicking the "Parent Portal" link on the login screen. It features real-time regulatory room suggestion based on the child's age, schedules selection, sibling priority declarations, and displays a summary review before generating a reference ID.
+2. **Workflow 2: Admin reviews new enrollment**: Administrators can open any profile modal to inspect details, see the child's age in months, view recommended rooms, check current room capacity context, and review internally.
+3. **Workflow 3: Waiting List to Place Opportunity**: If a room has vacancies (`enrolled_count < capacity`), OnePath displays a glowing alert on the admin dashboard. Clicking "Match Waitlist Candidates" ranks the candidates using sibling priority (highest) and date of application (FIFO), allowing admins to easily offer places.
+4. **Workflow 4: Place Offer to Confirmed Enrollment**: When a place is offered, OnePath automatically creates a follow-up task to collect the deposit. In the child profile, admins can record parent acceptance (advances to `deposit_pending`) and verify the deposit payment (advances to `confirmed` and marks deposit as paid).
+5. **Activity Log Feed**: Every child record maintains a persistent audit timeline tracking creation, room classifications, stage advances, task completions, and external API sync histories.
 
 ---
 
 ## 🔌 API Documentation
 
+### User Authentication
+- `POST /api/auth/login` — Authenticate user with email and password.
+
 ### Enquiries & Pipeline
 - `GET /api/enquiries` — Fetch prospective children (supports filtering by `stage`, `room_id`, `source`, `search`).
 - `GET /api/enquiries/pipeline-summary` — Get high-level conversion rate, stage counts, and occupancy.
-- `GET /api/enquiries/:id` — Fetch single child profile with task list and sync history.
+- `GET /api/enquiries/:id` — Fetch single child profile with task list, sync history, and activity timeline.
 - `POST /api/enquiries` — Create a new prospective child application.
 - `POST /api/enquiries/suggest-room` — Auto-calculate suggested crèche room from DOB & start date.
 - `PATCH /api/enquiries/:id` — Update application stage, room, deposit, or notes.

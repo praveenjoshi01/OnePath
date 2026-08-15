@@ -8,7 +8,10 @@ import TaskDrawer from './components/TaskDrawer.jsx';
 import NewEnquiryModal from './components/NewEnquiryModal.jsx';
 import SyncModal from './components/SyncModal.jsx';
 import DetailModal from './components/DetailModal.jsx';
-import { LayoutGrid, Table, RefreshCw, AlertCircle } from 'lucide-react';
+import Login from './components/Login.jsx';
+import ParentEnrollment from './components/ParentEnrollment.jsx';
+import OpportunityModal from './components/OpportunityModal.jsx';
+import { LayoutGrid, Table, AlertCircle, Sparkles } from 'lucide-react';
 
 export default function App() {
   const [enquiries, setEnquiries] = useState([]);
@@ -18,12 +21,23 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Authentication State
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem('onepath_user');
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  // Navigation / View States
+  const [showParentPortal, setShowParentPortal] = useState(false);
   const [activeView, setActiveView] = useState('kanban'); // 'kanban' or 'table'
   const [showNewModal, setShowNewModal] = useState(false);
   const [syncTargetApp, setSyncTargetApp] = useState(null);
   const [detailTargetApp, setDetailTargetApp] = useState(null);
+  const [selectedVacancyRoom, setSelectedVacancyRoom] = useState(null);
 
   const fetchAllData = () => {
+    if (!user) return; // Only fetch if authenticated
+
     setLoading(true);
     setError(null);
 
@@ -47,8 +61,24 @@ export default function App() {
   };
 
   useEffect(() => {
-    fetchAllData();
-  }, []);
+    if (user) {
+      fetchAllData();
+    }
+  }, [user]);
+
+  const handleLoginSuccess = (userData) => {
+    setUser(userData);
+    localStorage.setItem('onepath_user', JSON.stringify(userData));
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('onepath_user');
+    setEnquiries([]);
+    setRooms([]);
+    setTasks([]);
+    setSummary(null);
+  };
 
   const handleUpdateStage = (id, newStage) => {
     fetch(`/api/enquiries/${id}`, {
@@ -109,12 +139,34 @@ export default function App() {
       });
   };
 
+  // Route: Public Parent Enrollment Form Wizard
+  if (showParentPortal) {
+    return <ParentEnrollment onCloseForm={() => setShowParentPortal(false)} />;
+  }
+
+  // Route: Staff Authentication Login Form
+  if (!user) {
+    return (
+      <Login
+        onLoginSuccess={handleLoginSuccess}
+        onToggleParentPortal={() => setShowParentPortal(true)}
+      />
+    );
+  }
+
+  // Check for vacant rooms with waitlisted candidates to trigger vacancy alert (Workflow 3)
+  const vacancyOpportunities = rooms.filter(room =>
+    room.available_places > 0 && room.pipeline_waitlist_count > 0
+  );
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Header
         onOpenNewModal={() => setShowNewModal(true)}
         onRefresh={fetchAllData}
         loading={loading}
+        user={user}
+        onLogout={handleLogout}
       />
 
       <main style={{ flex: 1, padding: '28px 32px', maxWidth: '1800px', margin: '0 auto', width: '100%' }}>
@@ -139,6 +191,62 @@ export default function App() {
 
         {/* Executive Metrics Header */}
         <DashboardStats summary={summary} taskCount={tasks.filter(t => t.status === 'pending').length} />
+
+        {/* Workflow 3: Vacancy Opportunity Alert Banners */}
+        {vacancyOpportunities.length > 0 && (
+          <div style={{ marginBottom: '24px' }}>
+            {vacancyOpportunities.map(room => (
+              <div key={room.id} style={{
+                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(6, 182, 212, 0.08))',
+                border: '1px solid rgba(245, 158, 11, 0.25)',
+                borderRadius: 'var(--radius-lg)',
+                padding: '16px 20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '12px',
+                boxShadow: 'var(--shadow-lg)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    background: 'rgba(245, 158, 11, 0.15)',
+                    color: '#fbbf24',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}>
+                    <Sparkles size={18} />
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: '0.9rem', fontWeight: 800, color: '#f8fafc' }}>
+                      Vacancy Allocation Opportunity: <span style={{ color: 'var(--accent-cyan)' }}>{room.name}</span>
+                    </h3>
+                    <p style={{ fontSize: '0.775rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                      Room capacity permits <strong>{room.available_places}</strong> more child places. <strong>{room.pipeline_waitlist_count}</strong> candidates are on the waiting list.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  className="btn btn-primary btn-sm"
+                  style={{
+                    background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                    border: 'none',
+                    color: '#000',
+                    fontWeight: 700,
+                    boxShadow: '0 4px 10px rgba(245, 158, 11, 0.25)'
+                  }}
+                  onClick={() => setSelectedVacancyRoom(room)}
+                >
+                  Match Waitlist Candidates
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Room Capacity & Occupancy Monitor */}
         <RoomPlanner rooms={rooms} />
@@ -233,8 +341,17 @@ export default function App() {
       {detailTargetApp && (
         <DetailModal
           application={detailTargetApp}
+          rooms={rooms}
           onClose={() => setDetailTargetApp(null)}
           onUpdateStage={handleUpdateStage}
+        />
+      )}
+
+      {selectedVacancyRoom && (
+        <OpportunityModal
+          room={selectedVacancyRoom}
+          onClose={() => setSelectedVacancyRoom(null)}
+          onRefreshData={fetchAllData}
         />
       )}
     </div>

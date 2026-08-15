@@ -7,7 +7,7 @@ import {
   deleteApplication,
   autoSuggestRoom,
   getRooms
-} from '../supabase_db.js';
+} from '../db.js';
 
 const router = express.Router();
 
