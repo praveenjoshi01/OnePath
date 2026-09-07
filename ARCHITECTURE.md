@@ -194,6 +194,6 @@ When a child record reaches `confirmed` stage, OnePath normalises the record int
 
 ## 🔐 User Authentication & Evaluation Credentials
 
-OnePath uses tokenless session cookie simulation (or local secure tokens) to manage session state on the client side, authenticating admin and manager users against the `users` table via the `POST /api/auth/login` endpoint.
+OnePath uses session authentication against the `users` table via `POST /api/auth/login`. The authentication engine (`authenticateUser`) implements case-insensitive email matching and automatic fallback evaluation credentials (`DEFAULT_USERS`) when database queries return null or when cloud Supabase tables are unseeded.
 
-For local development and testing, default evaluation credentials are kept in a Git-ignored markdown file `Code/credentials.md` to prevent exposure on the production-facing UI.
+For local development and testing, default evaluation credentials are documented in the Git-ignored markdown file `Code/credentials.md`.

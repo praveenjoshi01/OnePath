@@ -163,7 +163,7 @@ The SQLite database file is created automatically at `Code/server/enrollment_man
 
 ## 🔐 Evaluation & Default Credentials
 
-When launching the application, you will be prompted with a visual login screen. To keep the login screen clean, the default quick-fill credentials panel has been removed. You can find the seeded evaluation accounts documented locally in [credentials.md](file:///Users/praveenjoshi/Code/Code2026/OnePath/Code/credentials.md) (which is ignored by Git).
+When launching the application, you will be prompted with a visual login screen. The authentication engine supports case-insensitive email matching and automatic fallback evaluation credentials (`admin@onepath.ie` / `admin123` for Crèche Admin, `manager@onepath.ie` / `manager123` for Crèche Manager). You can find the seeded evaluation accounts documented locally in [credentials.md](file:///Users/praveenjoshi/Code/Code2026/OnePath/Code/credentials.md) (which is ignored by Git).
 
 ---
 
